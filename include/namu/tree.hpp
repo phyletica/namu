@@ -25,6 +25,7 @@ namespace namu {
             unsigned                    num_leaves() const;
             unsigned                    num_internals() const;
             unsigned                    num_nodes() const;
+            unsigned                    max_num_nodes() const;
 
         private:
 
@@ -67,6 +68,10 @@ namespace namu {
     }
 
     inline unsigned Tree::num_nodes() const {
+        return (this->_nleaves + this->_ninternals);
+    }
+
+    inline unsigned Tree::max_num_nodes() const {
         return (unsigned)this->_nodes.size();
     }
 }

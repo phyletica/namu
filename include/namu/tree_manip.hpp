@@ -31,6 +31,7 @@ namespace namu {
 
             double                          calc_tree_length() const;
             unsigned                        count_edges() const;
+            unsigned                        count_nodes() const;
             void                            scale_all_internal_heights(double scaler);
 
             std::string                     make_newick(unsigned precision, bool use_names = false) const;
@@ -97,6 +98,14 @@ namespace namu {
     }
 
     inline unsigned TreeManip::count_edges() const {
+        unsigned num_nodes = this->count_nodes();
+        if (num_nodes < 2) {
+            return 0;
+        }
+        return num_nodes - 1;
+    }
+
+    inline unsigned TreeManip::count_nodes() const {
         return (unsigned)this->_tree->_preorder.size();
     }
 
