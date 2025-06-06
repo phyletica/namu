@@ -6,12 +6,14 @@
 
 namespace phycoeval {
 
-    //class TreeManip;
+    class TreeManip;
+    class TreeIO;
     //class Likelihood;
     //class Updater;
 
     class Tree {
-        //friend class TreeManip;
+        friend class TreeManip;
+        friend class TreeIO;
         //friend class Likelihood;
         //friend class Updater;
 
