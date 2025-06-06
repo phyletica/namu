@@ -5,7 +5,7 @@
 #include <iostream>
 //#include "split.hpp"
 
-namespace phycoeval {
+namespace namu {
  
     class Tree;
     class TreeManip;

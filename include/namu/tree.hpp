@@ -4,7 +4,7 @@
 #include <iostream>
 #include "node.hpp"
 
-namespace phycoeval {
+namespace namu {
 
     class TreeManip;
     class TreeIO;

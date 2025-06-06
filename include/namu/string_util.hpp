@@ -6,7 +6,7 @@
 #include <vector>
 #include <map>
 
-namespace phycoeval {
+namespace namu {
 namespace str_util {
 
     inline std::vector<std::string> & split(
@@ -126,4 +126,4 @@ namespace str_util {
     }
 
 } // namespace string_util
-} // namespace phycoeval
+} // namespace namu

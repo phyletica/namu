@@ -10,10 +10,10 @@
 #include <boost/range/adaptor/reversed.hpp>
 #include <boost/format.hpp>
 #include <ncl/nxsmultiformat.h>
-#include "phycoeval/tree.hpp"
-#include "phycoeval/error.hpp"
+#include "namu/tree.hpp"
+#include "namu/error.hpp"
 
-namespace phycoeval {
+namespace namu {
 
     class TreeIO;
 

@@ -1,4 +1,4 @@
-This directory contains bash scripts for setting up phycoeval dependencies:
+This directory contains bash scripts for setting up namu dependencies:
 
 -   get-boost.sh
     -   This downloads and extracts Boost and creates a `boost-env.sh` file

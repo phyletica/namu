@@ -14,12 +14,12 @@
 #include <boost/range/adaptor/reversed.hpp>
 #include <boost/format.hpp>
 #include <ncl/nxsmultiformat.h>
-#include "phycoeval/tree.hpp"
-#include "phycoeval/tree_manip.hpp"
-#include "phycoeval/error.hpp"
-#include "phycoeval/string_util.hpp"
+#include "namu/tree.hpp"
+#include "namu/tree_manip.hpp"
+#include "namu/error.hpp"
+#include "namu/string_util.hpp"
 
-namespace phycoeval {
+namespace namu {
 
     class TreeIO {
 
@@ -102,7 +102,7 @@ namespace phycoeval {
             msg << "Problem parsing newick string: " << newick << std::endl;
             msg << "Exception caught: " << std::endl << typeid(e).name() << std::endl;
             msg << "Exception message: " << std::endl << e.what() << std::endl;
-            throw PhycoevalError(msg.str());
+            throw NamuX(msg.str());
         }
     }
 
@@ -115,7 +115,7 @@ namespace phycoeval {
         if (! in_stream.is_open()) {
             std::ostringstream msg;
             msg << "Could not open file: " << path;
-            throw PhycoevalError(msg.str());
+            throw NamuX(msg.str());
         }
         try {
             return this->parse_from_stream(in_stream, ncl_file_format,
@@ -126,7 +126,7 @@ namespace phycoeval {
             msg << "Problem parsing file: " << path << std::endl;
             msg << "Exception caught: " << std::endl << typeid(e).name() << std::endl;
             msg << "Exception message: " << std::endl << e.what() << std::endl;
-            throw PhycoevalError(msg.str());
+            throw NamuX(msg.str());
         }
     }
 
@@ -146,7 +146,7 @@ namespace phycoeval {
         if (num_taxa_blocks != 1) {
             std::ostringstream msg;
             msg << "Expecting 1 taxa block, but found " << num_taxa_blocks;
-            throw PhycoevalError(msg.str());
+            throw NamuX(msg.str());
         }
 
         NxsTaxaBlock * taxa_block = nexus_reader.GetTaxaBlock(0);
@@ -155,7 +155,7 @@ namespace phycoeval {
         if (num_tree_blocks != 1) {
             std::ostringstream msg;
             msg << "Expecting 1 tree block, but found " << num_tree_blocks;
-            throw PhycoevalError(msg.str());
+            throw NamuX(msg.str());
         }
 
         NxsTreesBlock * tree_block = nexus_reader.GetTreesBlock(taxa_block, 0);
@@ -164,7 +164,7 @@ namespace phycoeval {
         if (num_trees == 0) {
             std::ostringstream msg;
             msg << "Found no trees in tree block";
-            throw PhycoevalError(msg.str());
+            throw NamuX(msg.str());
         }
 
         TreeManip::SharedPtrVector tree_manips;
@@ -187,7 +187,7 @@ namespace phycoeval {
             double relative_ultrametricity_tolerance) const {
         // Tree must be processed to create the NxsSimpleTree
         if (! tree_description.IsProcessed()) {
-            throw PhycoevalError("Input tree was not processed by NCL");
+            throw NamuX("Input tree was not processed by NCL");
         }
 
         int default_int_edge_length = 0;
@@ -202,7 +202,7 @@ namespace phycoeval {
         //         ncl_simple_tree,
         //         abs_tolerance);
         // if (! tree_is_ultrametric) {
-        //     throw PhycoevalError("Input tree not ultrametric");
+        //     throw NamuX("Input tree not ultrametric");
         // }
         // const std::vector<NxsSimpleNode *> & leaves = ncl_simple_tree.GetLeavesRef();
         unsigned num_leaves = ncl_simple_tree.GetLeavesRef().size();
@@ -332,7 +332,7 @@ namespace phycoeval {
         if (gap_in_divs) {
             std::ostringstream msg;
             msg << "ERROR: Found gap in height indices in newick tree";
-            throw PhycoevalError(msg.str());
+            throw NamuX(msg.str());
         }
         tm->refresh_preorder();
         tm->refresh_levelorder();
@@ -379,14 +379,14 @@ namespace phycoeval {
             std::map<std::string, std::string> comment_map;
             this->parse_node_comments(leaf_node, comment_map);
             if (comment_map.count("height") < 1) {
-                throw PhycoevalError(
+                throw NamuX(
                     "TreeIO::get_min_leaf_height: A leaf didn't have a height comment"
                 );
             }
             double height;
             std::stringstream h_converter(comment_map["height"]);
             if (! (h_converter >> height)) {
-                throw PhycoevalError("could not convert node height \'" +
+                throw NamuX("could not convert node height \'" +
                         h_converter.str() + "\'");
             }
             if (height < min_height) {
@@ -515,7 +515,7 @@ namespace phycoeval {
         if (using_height_comments) {
             std::stringstream h_converter(comment_map["height"]);
             if (! (h_converter >> height)) {
-                throw PhycoevalError("could not convert node height \'" +
+                throw NamuX("could not convert node height \'" +
                         h_converter.str() + "\'");
             }
         }
@@ -549,12 +549,12 @@ namespace phycoeval {
         if (using_height_comments) {
             std::stringstream h_converter(comment_map["height"]);
             if (! (h_converter >> height)) {
-                throw PhycoevalError("could not convert node height \'" +
+                throw NamuX("could not convert node height \'" +
                         h_converter.str() + "\'");
             }
             std::stringstream i_converter(comment_map["height_index"]);
             if (! (i_converter >> height_index)) {
-                throw PhycoevalError("could not convert node height index \'" +
+                throw NamuX("could not convert node height index \'" +
                         i_converter.str() + "\'");
             }
         }
@@ -572,7 +572,7 @@ namespace phycoeval {
                     msg << "ERROR: create_internal_node: "
                             << "Height index " << height_index
                             << " has multiple heights in tree";
-                    throw PhycoevalError(msg.str());
+                    throw NamuX(msg.str());
                 }
             }
             tm->_div_events.at(height_index).push_back(new_node);

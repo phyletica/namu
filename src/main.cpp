@@ -1,10 +1,10 @@
 #include <iostream>
-#include "phycoeval/node.hpp"
-#include "phycoeval/tree.hpp"
-#include "phycoeval/tree_manip.hpp"
-#include "phycoeval/tree_io.hpp"
+#include "namu/node.hpp"
+#include "namu/tree.hpp"
+#include "namu/tree_manip.hpp"
+#include "namu/tree_io.hpp"
 
-using namespace phycoeval;
+using namespace namu;
 
 const double Node::_smallest_edge_length = 1.0e-12;
 

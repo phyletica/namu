@@ -1,8 +1,8 @@
 #include <catch2/catch.hpp>
-#include "phycoeval/node.hpp"
+#include "namu/node.hpp"
 
 TEST_CASE("Testing Node bare constructor", "[Node]") {
-    phycoeval::Node n = phycoeval::Node();
+    namu::Node n = namu::Node();
     REQUIRE(n.is_root() == true);
     REQUIRE(n.is_leaf() == true);
     REQUIRE(n.has_parent() == false);
