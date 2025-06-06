@@ -525,7 +525,7 @@ namespace namu {
             // Check to see if leaf height should be equal to zero (or the
             // min_leaf_height, but that should be zero if we are getting
             // heights from branch lengths
-            if (fabs(height - min_leaf_height) >= abs_tolerance) {
+            if (fabs(height - min_leaf_height) <= abs_tolerance) {
                 height = min_leaf_height;
             }
         }
