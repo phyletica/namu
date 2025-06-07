@@ -3,7 +3,7 @@
 #include <string>
 #include <vector>
 #include <iostream>
-//#include "split.hpp"
+#include "split.hpp"
 
 namespace namu {
  
@@ -31,7 +31,7 @@ namespace namu {
             Node *                  get_rightmost_child() const; 
             int                     get_number() const      {return this->_number;}
             std::string             get_name() const        {return this->_name;}
-            //Split                   get_spit() const        {return this->_split;}
+            Split                   get_spit() const        {return this->_split;}
             unsigned                get_number_of_children() const;
 
             double                  get_height() const      {return this->_height;}
@@ -58,7 +58,7 @@ namespace namu {
             int                 _number;
             std::string         _name;
             double              _height;
-            //Split               _split;
+            Split               _split;
     };
 
     inline Node::Node() {

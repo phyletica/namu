@@ -28,3 +28,5 @@ namu_dep = declare_dependency(
 
 subdir('tests')
 subdir('src')
+
+install_data('tests/data/test.tre', install_dir : 'data')

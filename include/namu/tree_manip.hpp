@@ -36,6 +36,8 @@ namespace namu {
 
             std::string                     make_newick(unsigned precision, bool use_names = false) const;
 
+            void                            store_splits(std::set<Split> & split_set);
+
             static bool                     compare_node_vecs(
                                                 const Node::PtrVector & a,
                                                 const Node::PtrVector & b);
@@ -267,6 +269,31 @@ namespace namu {
         for (auto & nd : this->_tree->_nodes) {
             if (nd._number == -1)
                 nd._number = curr_internal++;
+        }
+    }
+
+    inline void TreeManip::store_splits(std::set<Split> & split_set) {    
+        // Start by clearing and resizing all splits
+        for (auto & nd : _tree->_nodes) {
+            nd._split.resize(_tree->_nleaves);
+        }
+
+        // Now do a postorder traversal and add the bit corresponding
+        // to the current node in its parent node's split
+        for (auto nd : boost::adaptors::reverse(_tree->_preorder)) {
+            if (nd->_left_child) {
+                // add this internal node's split to splitset
+                split_set.insert(nd->_split);
+            }
+            else {
+                // set bit corresponding to this leaf node's number
+                nd->_split.set_bit_at(nd->_number);
+            }
+
+            if (nd->_parent) {
+                // parent's bits are the union of the bits set in all its children
+                nd->_parent->_split.add_split(nd->_split);
+            }
         }
     }
 

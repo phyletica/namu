@@ -65,8 +65,8 @@ namespace namu {
                                             Node * parent_node,
                                             const NxsSimpleNode * parent_ncl_node,
                                             const NxsTaxaBlock * taxa_block,
-                                            const std::unordered_map<const NxsSimpleNode *, int> node_to_preorder_index,
-                                            const unsigned num_leaves,
+                                            const std::unordered_map<std::string, unsigned> leaf_label_to_num_map,
+                                            unsigned & next_internal_index,
                                             const double max_root_to_tip_dist,
                                             const double min_leaf_height,
                                             const double abs_tolerance,
@@ -74,7 +74,6 @@ namespace namu {
             void                        process_leaf_node_from_ncl(
                                             Node * new_node,
                                             const NxsSimpleNode * ncl_node,
-                                            const NxsTaxaBlock * taxa_block,
                                             const double max_root_to_tip_dist,
                                             const double min_leaf_height,
                                             const double abs_tolerance,
@@ -204,51 +203,29 @@ namespace namu {
         // if (! tree_is_ultrametric) {
         //     throw NamuX("Input tree not ultrametric");
         // }
-        // const std::vector<NxsSimpleNode *> & leaves = ncl_simple_tree.GetLeavesRef();
-        unsigned num_leaves = ncl_simple_tree.GetLeavesRef().size();
-        // int num_leaves_int = leaves.size();
-        // std::vector<std::string> leaf_labels;
-        // leaf_labels.reserve(num_leaves);
-        // for (auto leaf_node : leaves) {
-        //     NxsString label = taxa_block->GetTaxonLabel(leaf_node->GetTaxonIndex());
-        //     leaf_labels.push_back(label);
-        // }
-        // // Sort labels to ensure we always give the same label the same
-        // // leaf node number 
-        // std::sort(leaf_labels.begin(), leaf_labels.end());
-        // // Create map of labels to node numbers
-        // std::unordered_map<std::string, int> leaf_label_to_num_map;
-        // leaf_label_to_num_map.reserve(num_leaves);
-        // for (int i = 0; i < num_leaves_int; ++i) {
-        //     assert(leaf_label_to_num_map.count(leaf_labels.at(i)) == 0);
-        //     leaf_label_to_num_map[leaf_labels.at(i)] = i;
-        // }
-
-        // Create map of nodes to preorder indices
-        // Making sure all persistant nodes (leaves and root) get the first
-        // 0--num_leaves indices
-        const std::vector<const NxsSimpleNode *> preorder_nodes = ncl_simple_tree.GetPreorderTraversal();
-        unsigned num_nodes = preorder_nodes.size();
-        std::unordered_map<const NxsSimpleNode *, int> node_to_preorder_index;
-        node_to_preorder_index.reserve(preorder_nodes.size());
-        unsigned next_leaf_index = 0;
-        unsigned next_internal_index = num_leaves;
-        for (unsigned i = 0; i < preorder_nodes.size(); ++i) {
-            if (preorder_nodes.at(i)->IsTip()) {
-                auto r = node_to_preorder_index.insert({preorder_nodes.at(i), next_leaf_index});
-                assert(r.second);
-                ++next_leaf_index;
-            } else {
-                auto r = node_to_preorder_index.insert({preorder_nodes.at(i), next_internal_index});
-                assert(r.second);
-                ++next_internal_index;
-            }
+        const std::vector<NxsSimpleNode *> & leaves = ncl_simple_tree.GetLeavesRef();
+        unsigned num_leaves = leaves.size();
+        std::vector<std::string> leaf_labels;
+        leaf_labels.reserve(num_leaves);
+        for (auto leaf_node : leaves) {
+            NxsString label = taxa_block->GetTaxonLabel(leaf_node->GetTaxonIndex());
+            leaf_labels.push_back(label);
         }
-        assert(next_leaf_index == num_leaves);
-        assert(next_internal_index == num_nodes);
+        // Sort labels to ensure we always give the same label the same
+        // leaf node number 
+        std::sort(leaf_labels.begin(), leaf_labels.end());
+        // Create map of labels to node numbers
+        std::unordered_map<std::string, unsigned> leaf_label_to_num_map;
+        leaf_label_to_num_map.reserve(num_leaves);
+        for (unsigned i = 0; i < num_leaves; ++i) {
+            assert(leaf_label_to_num_map.count(leaf_labels.at(i)) == 0);
+            leaf_label_to_num_map[leaf_labels.at(i)] = i;
+        }
+
+        unsigned next_internal_index = num_leaves;
+        unsigned num_nodes = ncl_simple_tree.GetPreorderTraversal().size();
 
         const NxsSimpleNode * ncl_root = ncl_simple_tree.GetRootConst();
-        assert(node_to_preorder_index.at(ncl_root) == (int)num_leaves);
         NxsSimpleEdge root_edge = ncl_root->GetEdgeToParent();
         std::map<std::string, std::string> root_info;
         for (auto nxs_comment : root_edge.GetUnprocessedComments()) {
@@ -296,8 +273,9 @@ namespace namu {
 
         try {
             // Make the root node
-            int node_index = node_to_preorder_index.at(ncl_root);
-            assert(node_index == (int)num_leaves);
+            // int node_index = node_to_preorder_index.at(ncl_root);
+            // assert(node_index == (int)num_leaves);
+            unsigned node_index = next_internal_index++;
             Node * root = &tm->_tree->_nodes.at(node_index);
             tm->_tree->_root = root;
             this->process_internal_node_from_ncl(
@@ -316,8 +294,8 @@ namespace namu {
                     root,
                     ncl_root,
                     taxa_block,
-                    node_to_preorder_index,
-                    num_leaves,
+                    leaf_label_to_num_map,
+                    next_internal_index,
                     max_root_to_tip_dist,
                     min_leaf_height,
                     abs_tolerance,
@@ -327,6 +305,7 @@ namespace namu {
             tm->clear();
             throw e;
         }
+        assert(next_internal_index == num_nodes);
 
         bool gap_in_divs = (! tm->no_gaps_in_div_events());
         if (gap_in_divs) {
@@ -440,30 +419,34 @@ namespace namu {
             Node * parent_node,
             const NxsSimpleNode * parent_ncl_node,
             const NxsTaxaBlock * taxa_block,
-            const std::unordered_map<const NxsSimpleNode *, int> node_to_preorder_index,
-            const unsigned num_leaves,
+            const std::unordered_map<std::string, unsigned> leaf_label_to_num_map,
+            unsigned & next_internal_index,
             const double max_root_to_tip_dist,
             const double min_leaf_height,
             const double abs_tolerance,
             const bool using_height_comments) const {
         for (auto child_ncl_node : parent_ncl_node->GetChildren()) {
-            int node_index = node_to_preorder_index.at(child_ncl_node);
-            Node * new_node = &tm->_tree->_nodes.at(node_index);
+            Node * new_node;
             if (child_ncl_node->IsTip()) {
                 // This is a leaf
                 // We give leaves numbers now, but wait until
                 // renumber_internals call for internal nodes
-                new_node->_number = node_index;
+                std::string label = taxa_block->GetTaxonLabel(child_ncl_node->GetTaxonIndex());
+                unsigned node_index = leaf_label_to_num_map.at(label);
+                new_node = &tm->_tree->_nodes.at(node_index);
+                new_node->_number = (int)node_index;
+                new_node->_name = label;
                 this->process_leaf_node_from_ncl(
                         new_node,
                         child_ncl_node,
-                        taxa_block,
                         max_root_to_tip_dist,
                         min_leaf_height,
                         abs_tolerance,
                         using_height_comments);
             }
             else {
+                unsigned node_index = next_internal_index++;
+                new_node = &tm->_tree->_nodes.at(node_index);
                 this->process_internal_node_from_ncl(
                         tm,
                         new_node,
@@ -471,6 +454,7 @@ namespace namu {
                         max_root_to_tip_dist,
                         using_height_comments);
                 if (! using_height_comments) {
+                    unsigned num_leaves = leaf_label_to_num_map.size();
                     tm->_div_events.at(node_index - num_leaves).push_back(new_node);
                 }
             }
@@ -490,8 +474,8 @@ namespace namu {
                         new_node,
                         child_ncl_node,
                         taxa_block,
-                        node_to_preorder_index,
-                        num_leaves,
+                        leaf_label_to_num_map,
+                        next_internal_index,
                         max_root_to_tip_dist,
                         min_leaf_height,
                         abs_tolerance,
@@ -503,7 +487,6 @@ namespace namu {
     inline void TreeIO::process_leaf_node_from_ncl(
             Node * new_node,
             const NxsSimpleNode * ncl_node,
-            const NxsTaxaBlock * taxa_block,
             const double max_root_to_tip_dist,
             const double min_leaf_height,
             const double abs_tolerance,
@@ -531,7 +514,6 @@ namespace namu {
         }
 
         new_node->_height = height;
-        new_node->_name = taxa_block->GetTaxonLabel(ncl_node->GetTaxonIndex());
         // new_node->extract_data_from_node_comments(comment_map);
     }
 
