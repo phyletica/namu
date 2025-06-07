@@ -40,6 +40,24 @@ tar xzf "${boost_name}.tar.gz"
 
 boost_dir="${dep_dir}/${boost_name}"
 
+echo
+echo "Compiling Boost program_options library..."
+echo
+cd "$boost_dir"
+./bootstrap.sh --with-toolset=gcc --with-libraries=program_options,filesystem,system
+./b2 cxxflags="-std=c++11" -d 2
+
+boost_lib_dir="${boost_dir}/stage/lib"
+boost_static_dir="${boost_dir}/stage/lib/static"
+mkdir "$boost_static_dir"
+cp "${boost_lib_dir}"/*.a "$boost_static_dir"
+
+echo
+echo "Static libraries copied to:"
+echo "$boost_static_dir"
+echo
+
 env_path="${dep_dir}/boost-env.sh"
 echo export BOOST_PREFIX="${boost_dir}" > "$env_path"
 echo export LD_LIBRARY_PATH="${boost_dir}:\${LD_LIBRARY_PATH}" >> "$env_path"
+echo export boost_static_dir="${boost_static_dir}" >> "$env_path"
