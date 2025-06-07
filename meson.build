@@ -4,6 +4,11 @@ project('namu', 'cpp',
 
 cpp = meson.get_compiler('cpp')
 
+boost_program_options_lib = cpp.find_library('boost_program_options',
+    dirs: [meson.current_source_dir() + '/dependencies/boost_1_71_0/stage/lib/static'],
+    required: true
+)
+
 ncl_lib = cpp.find_library('ncl',
     dirs: [meson.current_source_dir() + '/dependencies/ncl-build/installed/lib/static'],
     required: true
@@ -28,5 +33,3 @@ namu_dep = declare_dependency(
 
 subdir('tests')
 subdir('src')
-
-install_data('tests/data/test.tre', install_dir : 'data')

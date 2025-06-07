@@ -311,8 +311,12 @@ namespace namu {
             }
             else {
                 if (use_names) {
+                    std::string name = nd->_name;
+                    if (! name.empty()) {
+                        name = '\'' + name + '\'';
+                    }
                     newick += boost::str(boost::format(tip_node_name_format)
-                            % nd->_name
+                            % name
                             % nd->get_edge_length());
                 }
                 else {

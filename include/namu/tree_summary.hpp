@@ -84,7 +84,7 @@ namespace namu {
             tm = trees.at(t);
 
             // store the newick tree description
-            std::string newick = tm->make_newick(10);
+            std::string newick = tm->make_newick(10, true);
             newick += ";";
             this->_newicks.push_back(newick);
             unsigned tree_index = (unsigned)this->_newicks.size() - 1;

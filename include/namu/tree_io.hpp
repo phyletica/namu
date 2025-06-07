@@ -273,8 +273,6 @@ namespace namu {
 
         try {
             // Make the root node
-            // int node_index = node_to_preorder_index.at(ncl_root);
-            // assert(node_index == (int)num_leaves);
             unsigned node_index = next_internal_index++;
             Node * root = &tm->_tree->_nodes.at(node_index);
             tm->_tree->_root = root;
