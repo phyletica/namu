@@ -8,6 +8,10 @@ boost_program_options_lib = cpp.find_library('boost_program_options',
     dirs: [meson.current_source_dir() + '/dependencies/boost_1_71_0/stage/lib/static'],
     required: true
 )
+boost_filesystem_lib = cpp.find_library('boost_filesystem',
+    dirs: [meson.current_source_dir() + '/dependencies/boost_1_71_0/stage/lib/static'],
+    required: true
+)
 
 ncl_lib = cpp.find_library('ncl',
     dirs: [meson.current_source_dir() + '/dependencies/ncl-build/installed/lib/static'],

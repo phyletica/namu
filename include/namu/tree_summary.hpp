@@ -39,11 +39,11 @@ namespace namu {
     };
 
     inline TreeSummary::TreeSummary() { 
-        std::cout << "Constructing a TreeSummary" << std::endl;
+        // std::cout << "Constructing a TreeSummary" << std::endl;
     } 
 
     inline TreeSummary::~TreeSummary() {
-        std::cout << "Destroying a TreeSummary" << std::endl;
+        // std::cout << "Destroying a TreeSummary" << std::endl;
     }
 
     inline TreeManip::SharedPtr TreeSummary::get_tree_manip(unsigned index) {   

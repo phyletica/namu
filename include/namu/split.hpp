@@ -57,7 +57,7 @@ namespace namu {
         _nleaves = 0;
         _bits_per_unit = (CHAR_BIT)*sizeof(Split::split_unit_t);
         clear();
-        std::cout << "Constructing a Split" << std::endl;
+        // std::cout << "Constructing a Split" << std::endl;
     } 
 
     inline Split::Split(const Split & other) {
@@ -65,11 +65,11 @@ namespace namu {
         _nleaves = other._nleaves;
         _bits_per_unit = (CHAR_BIT)*sizeof(Split::split_unit_t);
         _bits = other._bits;
-        std::cout << "Constructing a Split by copying an existing split" << std::endl;
+        // std::cout << "Constructing a Split by copying an existing split" << std::endl;
     }
 
     inline Split::~Split() {
-        std::cout << "Destroying a Split" << std::endl;
+        // std::cout << "Destroying a Split" << std::endl;
     } 
 
     inline void Split::clear() { 

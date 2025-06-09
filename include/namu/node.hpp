@@ -62,12 +62,12 @@ namespace namu {
     };
 
     inline Node::Node() {
-        std::cout << "Creating Node object" << std::endl;
+        // std::cout << "Creating Node object" << std::endl;
         this->clear();
     }
 
     inline Node::~Node() {
-        std::cout << "Destroying Node object" << std::endl;
+        // std::cout << "Destroying Node object" << std::endl;
     }
 
     inline void Node::clear() {

@@ -63,18 +63,18 @@ namespace namu {
     };
 
     inline TreeManip::TreeManip() {
-        std::cout << "Constructing a TreeManip" << std::endl;
+        // std::cout << "Constructing a TreeManip" << std::endl;
         this->clear();
     }
 
     inline TreeManip::TreeManip(Tree::SharedPtr t) {
-        std::cout << "Constructing a TreeManip with a supplied tree" << std::endl;
+        // std::cout << "Constructing a TreeManip with a supplied tree" << std::endl;
         this->clear();
         this->set_tree(t);
     }
 
     inline TreeManip::~TreeManip() {
-        std::cout << "Destroying a TreeManip" << std::endl;
+        // std::cout << "Destroying a TreeManip" << std::endl;
     }
 
     inline void TreeManip::clear() {
