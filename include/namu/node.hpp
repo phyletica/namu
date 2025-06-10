@@ -10,7 +10,7 @@ namespace namu {
     class Tree;
     class TreeManip;
     class TreeIO;
-    //class Likelihood;
+    class Likelihood;
     //class Updater;
 
     class Node {
@@ -18,7 +18,7 @@ namespace namu {
         friend class TreeManip;
         friend class TreeIO;
         friend class NodeTester;
-        //friend class Likelihood;
+        friend class Likelihood;
         //friend class Updater;
 
         public:

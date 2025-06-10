@@ -4,6 +4,7 @@
 #include <boost/program_options.hpp>
 #include <boost/filesystem.hpp>
 #include "namu/data.hpp"
+#include "namu/likelihood.hpp"
 #include "namu/tree_summary.hpp"
 #include "namu/partition.hpp"
 
@@ -26,8 +27,12 @@ namespace namu {
 
             Partition::SharedPtr    _partition;
             Data::SharedPtr         _data;
+            Likelihood::SharedPtr   _likelihood;
 
             TreeSummary::SharedPtr  _tree_summary;
+
+            bool                    _use_gpu;
+            bool                    _ambig_missing;
 
             static std::string      _program_name;
             static unsigned         _major_version;
@@ -45,10 +50,15 @@ namespace namu {
     }
 
     inline void Namu::clear() {
-        _conf_file_path = "";
-        _data_file_path = "";
-        _tree_file_path = "";
-        _tree_summary   = nullptr;
+        this->_conf_file_path = "";
+        this->_data_file_path = "";
+        this->_tree_file_path = "";
+        this->_tree_summary   = nullptr;
+        this->_partition.reset(new Partition());
+        this->_use_gpu        = true;
+        this->_ambig_missing  = true;
+        this->_data = nullptr; 
+        this->_likelihood = nullptr;
     }
 
     inline void Namu::process_command_line_options(int argc, const char * argv[]) {
@@ -69,8 +79,10 @@ namespace namu {
         boost::program_options::options_description main_options("Command line and config file options");
         main_options.add_options()
             ("datafile,d",  boost::program_options::value(&data_path)->required(), "Path to a data file in NEXUS format")
-            ("treefile,t",  boost::program_options::value(&tree_path), "Path to a tree file in NEXUS format")
+            ("treefile,t",  boost::program_options::value(&tree_path)->required(), "Path to a tree file in NEXUS format")
             ("subset",  boost::program_options::value(&partition_subsets), "A string defining a partition subset, e.g. 'first:1-1234\3' or 'default[codon:standard]:1-3702'")
+            ("gpu",           boost::program_options::value(&_use_gpu)->default_value(true), "Use GPU if available")
+            ("ambigmissing",  boost::program_options::value(&_ambig_missing)->default_value(true), "Treat all ambiguities as missing data")
         ;
 
         // Aggregate options allowed on command line
@@ -148,6 +160,13 @@ namespace namu {
             std::cout << boost::str(boost::format("This is %s version %d.%d") % _program_name % _major_version % _minor_version) << std::endl;
             std::exit(1);
         }
+        
+        // No command line args provided
+        if (argc == 1) {
+            std::cout << boost::str(boost::format("This is %s version %d.%d") % _program_name % _major_version % _minor_version) << std::endl;
+            std::cout << cmd_line_options << "\n";
+            std::exit(1);
+        }
 
         // Update data file path if provided in config file
         if ((! data_file_provided) && (vm.count("datafile") > 0)) {
@@ -203,7 +222,31 @@ namespace namu {
                 std::cout << "    data type: " << dt.get_data_type_as_string() << std::endl;
                 std::cout << "    sites:     " << _data->calc_seq_len_in_subset(subset) << std::endl;
                 std::cout << "    patterns:  " << _data->get_num_patterns_in_subset(subset) << std::endl;
-                }
+                std::cout << "    ambiguity: " << (_ambig_missing || dt.is_codon() ? "treated as missing data (faster)" : "handled appropriately (slower)") << std::endl;
+            }
+
+            std::cout << "\n*** Resources available to BeagleLib " << this->_likelihood->beagle_lib_version() << ":\n";
+            std::cout << this->_likelihood->available_resources() << std::endl;
+
+            std::cout << "\n*** Creating the likelihood calculator" << std::endl;
+            this->_likelihood = Likelihood::SharedPtr(new Likelihood());
+            this->_likelihood->set_prefer_gpu(this->_use_gpu);
+            this->_likelihood->set_ambiguity_equals_missing(this->_ambig_missing);
+            this->_likelihood->set_data(_data);
+            this->_likelihood->init_beagle_lib();
+
+            std::cout << "\n*** Reading and storing the first tree in the file " << this->_tree_file_path << std::endl;
+            this->_tree_summary = TreeSummary::SharedPtr(new TreeSummary());
+            this->_tree_summary->read_tree_file(this->_tree_file_path, 0);
+            Tree::SharedPtr tree = this->_tree_summary->get_tree(0);
+
+            if (tree->num_leaves() != this->_data->get_num_taxa())
+                throw NamuX(boost::format("Number of taxa in tree (%d) does not equal the number of taxa in the data matrix (%d)") % tree->num_leaves() % this->_data->get_num_taxa());
+
+            std::cout << "\n*** Calculating the likelihood of the tree" << std::endl;
+            double lnL = this->_likelihood->calc_log_likelihood(tree);
+            std::cout << boost::str(boost::format("log likelihood = %.5f") % lnL) << std::endl;
+            std::cout << "      (expecting -278.83767)" << std::endl;
         }
         catch (NamuX & x) {
             std::cerr << "Namu encountered a problem:\n  " << x.what() << std::endl;

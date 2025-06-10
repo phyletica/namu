@@ -13,8 +13,9 @@ namu_test_files = files(
 namu_test_exe = executable(
     'test_namu',
     namu_test_files,
-    dependencies : [ namu_dep, catch2_with_main_dep, ncl_lib, boost_program_options_lib, boost_filesystem_lib ],
-    include_directories : [ boost_include, ncl_include ]
+    link_with : namu_lib,
+    dependencies : [ catch2_with_main_dep, ncl_lib, boost_program_options_lib, boost_filesystem_lib, beagle_lib ],
+    include_directories : [ namu_include, boost_include, ncl_include, beagle_include ]
 )
 
 test('namu test', namu_test_exe)
