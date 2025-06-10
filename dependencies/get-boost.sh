@@ -38,8 +38,6 @@ echo "Extracting Boost release 1.71.0..."
 echo
 tar xzf "${boost_name}.tar.gz"
 
-boost_dir="${dep_dir}/${boost_name}"
-
 echo
 echo "Compiling Boost program_options library..."
 echo
