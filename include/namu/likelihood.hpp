@@ -69,6 +69,7 @@ namespace namu {
             unsigned                                get_scaler_index(Node * nd, InstanceInfo & info) const;
             unsigned                                get_partial_index(Node * nd, InstanceInfo & info) const;
             unsigned                                get_t_matrix_index(Node * nd, InstanceInfo & info, unsigned subset_index) const;
+            unsigned                                get_t_matrix_index_from_node_num(int node_num, InstanceInfo & info, unsigned subset_index) const;
             void                                    update_instance_map(instance_pair_t & p, unsigned subset);
             void                                    new_instance(unsigned nstates, int nrates, std::vector<unsigned> & subset_indices);
             void                                    set_tip_states();
@@ -342,7 +343,7 @@ namespace namu {
 
         unsigned num_edges = this->calc_num_edges_in_fully_resolved_tree();
         // add 1 to num_edges so that subroot node will have a tmatrix, root tip's tmatrix is never used
-        unsigned num_nodes = num_edges + 1;
+        unsigned num_nodes = num_edges;
         // unsigned num_nodes = num_edges;
         unsigned num_transition_probs = num_nodes*num_subsets;
         
@@ -653,7 +654,13 @@ namespace namu {
     }
     
     inline unsigned Likelihood::get_t_matrix_index(Node * nd, InstanceInfo & info, unsigned subset_index) const {
+        assert(! nd->is_root());
         unsigned tindex = subset_index*info.t_matrix_offset + nd->_number;
+        return tindex;
+    }
+
+    inline unsigned Likelihood::get_t_matrix_index_from_node_num(int node_num, InstanceInfo & info, unsigned subset_index) const {
+        unsigned tindex = subset_index*info.t_matrix_offset + node_num;
         return tindex;
     }
       
@@ -681,7 +688,9 @@ namespace namu {
             }
             else {
                 // This is an internal node
-                this->queue_t_matrix_recalculation(nd);
+                if (! nd->is_root()) {
+                    this->queue_t_matrix_recalculation(nd);
+                }
 
                 // Internal nodes have partials to be calculated, so define
                 // an operation to compute the partials for this node
@@ -880,7 +889,8 @@ namespace namu {
         int cumulative_scale_index = (this->_underflow_scaling ? 0 : BEAGLE_OP_NONE);
         int child_partials_index   = this->get_partial_index(t->_root, info);
         int parent_partials_index  = this->get_partial_index(t->_preorder[0], info);
-        int parent_t_matrix_index   = this->get_t_matrix_index(t->_preorder[0], info, 0);
+        assert(child_partials_index == parent_partials_index);
+        // int parent_t_matrix_index   = this->get_t_matrix_index(t->_preorder[0], info, 0);
 
         // storage for results of the likelihood calculation
         std::vector<double> subset_log_likelihoods(nsubsets, 0.0);
@@ -942,7 +952,7 @@ namespace namu {
                 this->_scaling_indices[s] = (this->_underflow_scaling ? 0 : BEAGLE_OP_NONE); 
                 this->_subset_indices[s]  = s;
                 this->_freqs_indices[s]   = s;
-                this->_t_matrix_indices[s] = this->get_t_matrix_index(t->_preorder[0], info, s); //index_focal_child + s*t_matrix_skip;
+                this->_t_matrix_indices[s] = this->get_t_matrix_index_from_node_num(t->_preorder[0]->_number - 1, info, s); //index_focal_child + s*t_matrix_skip;
             }
             // code = beagleCalculateEdgeLogLikelihoodsByPartition(
             //     info.handle,                 // instance number
