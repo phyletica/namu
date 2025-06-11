@@ -29,12 +29,14 @@ boost_include = include_directories('./dependencies/boost_1_71_0', is_system : t
 
 beagle_include = include_directories('./dependencies/beagle-lib-3.1.2/installed/include/libhmsbeagle-1')
 
+eigen_include = include_directories('./dependencies/eigen-3.4.0')
+
 namu_include = include_directories('include')
 
 namu_lib = static_library(
     'namu',
     'src/main.cpp',
-    include_directories : [ namu_include, boost_include, ncl_include, beagle_include ],
+    include_directories : [ namu_include, boost_include, ncl_include, beagle_include, eigen_include ],
     install : true
 )
 

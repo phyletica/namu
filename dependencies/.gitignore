@@ -3,3 +3,4 @@ boost-env.sh
 ncl-env.sh
 ncl-build
 beagle-*
+eigen*
